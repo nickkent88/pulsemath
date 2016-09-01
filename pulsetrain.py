@@ -5,7 +5,7 @@ from bisect import bisect_left
 
 EPSILON = .000001
 def eq_float(num1, num2):
-    if abs(num1 - num2) < EPSILON:
+    if eq_float(num1, num2):
         return True
     else: 
         return False
@@ -37,7 +37,7 @@ class Pulse(object):
     #     pass
 
     def __eq__(lhs, rhs):
-        return (abs(lhs.start_time() - rhs.start_time()) < EPSILON
+        return (eq_float(lhs.start_time(), rhs.start_time())
                 and abs(lhs.end_time() == rhs.end_time()) < EPSILON)
 
     # The next two overloads are mostly just a convenience for using bisect().
@@ -81,10 +81,10 @@ class PulseTrain(object):
         self.duration = float(duration)
         try:
             self._pattern = list(pulses)
-            self._pulses = list(pulses)
+            self._pulses = pattern * (duration//pri)
         except TypeError:
             self._pattern = [pulses]
-            self._pulses = [pulses]
+            self._pulses = pattern * (duation//pri)
 
     # USE REPRLIB
     def __repr__(self):
