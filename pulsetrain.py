@@ -4,6 +4,11 @@ import numpy as np
 from bisect import bisect_left
 
 EPSILON = .000001
+def eq_float(num1, num2):
+    if abs(num1 - num2) < EPSILON:
+        return True
+    else: 
+        return False
 
 class Pulse(object):
     """A discrete, rectangular pulse
@@ -13,9 +18,9 @@ class Pulse(object):
     """
 
     def __init__(self, start_time, end_time):
-        self.start_time = start_time
-        self.end_time = end_time
-        self.width = end_time - start_time
+        self.start_time = float(start_time)
+        self.end_time = float(end_time)
+        self.width = float(end_time - start_time)
 
     def __repr__(self):
         outvars = {'start': self.start_time, 'end': self.end_time}
@@ -48,7 +53,7 @@ class Pulse(object):
 
     @staticmethod
     def overlap(pulse1, pulse2):
-    """This function calculates the overlap, in seconds, of pulse2 on pulse1."""
+        """This function calculates the overlap, in seconds, of pulse2 on pulse1."""
         if (pulse1.start_time_us() > pulse2.end_time_us()):
             return 0.0
         if (pulse1.end_time_us() < pulse2.start_time_us()):
@@ -71,10 +76,12 @@ class PulseTrain(object):
             pulses (iterable(Pulse)): An iterable containing Pulse objects.
     """
 
-    def __init__(self, pri, pulses):
+    def __init__(self, pri, pulses, duration):
         assert isinstance(pulses, containers.list)
-        self.pri = pri
+        self.pri = float(pri)
+        self._pattern = list(pulses)
         self._pulses = list(pulses)
+        self.duration = float(duration)
 
     # USE REPRLIB
     def __repr__(self):
@@ -129,8 +136,31 @@ class PulseTrain(object):
     def clear(self):
         self._pulses.clear()
 
-    def shift_phase(self):
-        pass
+    def shift_phase(self, increment):
+        for pulse in self._pulses:
+            pulse.shift_phase(increment)
+        # Ensure that the pulse train is "circular".
+        if eq_float(self._pulses[-1], self.duration):
+            last_pulse = self._pulses[-1].end_time
+            overhang = last_pulse - duration
+            # Is the last pulse hanging off the end?
+            if overhang > 0:
+                # Is the last pulse totally off the end?
+                if last_pulse.start_time > duration:
+                    self._pulses[0].start_time = last_pulse.start_time - duration
+                    self._pulses.pop()
+                else:
+                    # If there is already an overlapping pulse at the start
+                    # of the train?
+                    if eq_float(self._pulses[0].end_time, overhang):
+                        # Lengthen first pulse, moving start time to zero
+                        self._pulses[0].start_time = 0
+                        # Chop the end of the last pulse
+                        last_pulse.end_time = duration 
+                    else:
+                        # Insert pulse with width equal to the length of the 
+                        # last pulse's overhang.
+                        self._pulses.insert(0, Pulse(0, overhang))
 
     @staticmethod
     def coincidence_fraction(train1, train2, method):
