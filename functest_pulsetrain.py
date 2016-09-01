@@ -1,26 +1,26 @@
 import unittest
 
-import pulsetrain.py
+from pulsetrain import *
 
 class CoincidenceFraction(unittest.TestCase):
 
     def test_coincidence_fraction(self):
         # Make pulse for simple magnetron train, with width=1
         pulse = Pulse(0, 1)
-        assertIsInstance(pulse.start_time, float)
-        assertIsInstance(pulse.end_time, float)
-        assertIsInstance(pulse.width, float)
-        assertEqual(pulse.start_time, 0)
-        assertEqual(pulse.start_time, 1)
-        assertEqual(pulse.start_time, 1)
+        self.assertIsInstance(pulse.start_time, float)
+        self.assertIsInstance(pulse.end_time, float)
+        self.assertIsInstance(pulse.width, float)
+        self.assertEqual(pulse.start_time, 0)
+        self.assertEqual(pulse.end_time, 1)
+        self.assertEqual(pulse.width, 1)
 
         # Make simple magnetron train
         s_train = PulseTrain(1000, 6000, pulse)
-        assertIsInstance(train.pri, float)
-        assertIsInstance(train.duration, float)
-        assertEqual(train.pri, 1000)
-        assertEqual(train.duration, 6000)
-        assertEqual(len(s_train), 1) 
+        self.assertIsInstance(s_train.pri, float)
+        self.assertIsInstance(s_train.duration, float)
+        self.assertEqual(s_train.pri, 1000)
+        self.assertEqual(s_train.duration, 6000)
+        self.assertEqual(len(s_train), 1) 
 
         # Make pulses for general solid-state train
         pulses = (Pulse(0, .2),
@@ -33,15 +33,15 @@ class CoincidenceFraction(unittest.TestCase):
 
         # Make solid state train
         c_train = PulseTrain(1200, 6000, pulses)
-        assertEqual(len(c_train), 6) 
+        self.assertEqual(len(c_train), 7) 
 
         # Compute coincidence fraction via sim
-        f_c = PulseTrain.coincidence_fraction(s_train, c_train)
+        f_c = PulseTrain.coincidence_fraction(s_train, c_train, 'sim')
         f_c_actual = .1265
-        assertAlmostEqual(f_c, f_c_actual, 7)
+        self.assertAlmostEqual(f_c, f_c_actual, 7)
 
         # Finish tests
-        assertTrue(False)
+        self.assertTrue(False)
 
 if __name__ == '__main__':
     unittest.main()
