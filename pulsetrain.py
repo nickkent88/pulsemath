@@ -1,7 +1,7 @@
-# RETURN NOT IMPLEMENTED FOR SOMETHING
-# REPRLIB FOR PULSE TRAIN
-import numpy as np
 from bisect import bisect_left
+import numbers
+
+import numpy as np
 
 EPSILON = .000001
 def eq_float(num1, num2):
@@ -16,7 +16,6 @@ class Pulse(object):
     Args:   start_time (float): The time at which the pulse starts.
             end_time (float): The time at which the pulse ends.
     """
-
     def __init__(self, start_time, end_time):
         self.start_time = float(start_time)
         self.end_time = float(end_time)
@@ -77,13 +76,17 @@ class PulseTrain(object):
     """A sequence of discrete, rectangular pulses.
 
     Args:   pri (float): The pulse repetition interval of the train. More than
-            one pulse may occur in a single PRI.
+                one pulse may occur in a single PRI.
             pulses (iterable(Pulse)): An iterable containing Pulse objects.
+            duration (float): The duration of the train. If unspecified the 
+                default duration is equal to the specified PRI.
     """
-
-    def __init__(self, pri, duration, pulses):
+    def __init__(self, pri, pulses, duration=None):
         self.pri = float(pri)
-        self.duration = float(duration)
+        if not duration == None:
+            self.duration = float(duration)
+        else:
+            self.duration = float(pri)
         try:
             self._pattern = list(pulses)
             self._pulses = self._pattern * (duration//pri)
@@ -112,7 +115,9 @@ class PulseTrain(object):
     def __getitem__(self, index):
         cls = type(self)
         if isinstance(index, slice):
-            return cls(self.pri, self._pulses[index])
+            # If a user wants to take a slice of the pulses, they should slice
+            # the pattern and make a new train with the sublist.
+            return NotImplemented 
         elif isinstance(index, numbers.Integral):
             return self._pulses[index]
         else:
@@ -169,6 +174,8 @@ class PulseTrain(object):
                         # Insert pulse with width equal to the length of the 
                         # last pulse's overhang.
                         self._pulses.insert(0, Pulse(0, overhang))
+    def to_vector(self):
+        pass
 
     @staticmethod
     def coincidence_fraction(train1, train2, method='sim'):
