@@ -76,12 +76,15 @@ class PulseTrain(object):
             pulses (iterable(Pulse)): An iterable containing Pulse objects.
     """
 
-    def __init__(self, pri, pulses, duration):
-        assert isinstance(pulses, containers.list)
+    def __init__(self, pri, duration, pulses):
         self.pri = float(pri)
-        self._pattern = list(pulses)
-        self._pulses = list(pulses)
         self.duration = float(duration)
+        try:
+            self._pattern = list(pulses)
+            self._pulses = list(pulses)
+        except TypeError:
+            self._pattern = [pulses]
+            self._pulses = [pulses]
 
     # USE REPRLIB
     def __repr__(self):
@@ -163,7 +166,7 @@ class PulseTrain(object):
                         self._pulses.insert(0, Pulse(0, overhang))
 
     @staticmethod
-    def coincidence_fraction(train1, train2, method):
+    def coincidence_fraction(train1, train2, method='sim'):
         pass
 
 
