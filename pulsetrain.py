@@ -5,7 +5,7 @@ from bisect import bisect_left
 
 EPSILON = .000001
 def eq_float(num1, num2):
-    if eq_float(num1, num2):
+    if abs(num1 - num2) < EPSILON:
         return True
     else: 
         return False
@@ -37,35 +37,40 @@ class Pulse(object):
     #     pass
 
     def __eq__(lhs, rhs):
-        return (eq_float(lhs.start_time(), rhs.start_time())
-                and abs(lhs.end_time() == rhs.end_time()) < EPSILON)
+        return (eq_float(lhs.start_time, rhs.start_time)
+                and eq_float(lhs.end_time, rhs.end_time))
 
     # The next two overloads are mostly just a convenience for using bisect().
     def __le__(lhs, rhs):
-        return lhs.end_time() <= rhs.start_time() - EPSILON
+        return lhs.end_time <= rhs.start_time + EPSILON
 
     def __lt__(lhs, rhs):
-        return lhs.end_time() < rhs.start_time() - EPSILON
+        return lhs.end_time < rhs.start_time + EPSILON
 
     def shift_phase(self, increment):
-        self.start_time_us += amount_us
-        self.end_time_us += amount_us
+        self.start_time += amount_us
+        self.end_time += amount_us
 
     @staticmethod
     def overlap(pulse1, pulse2):
         """This function calculates the overlap, in seconds, of pulse2 on pulse1."""
-        if (pulse1.start_time_us() > pulse2.end_time_us()):
+        if (pulse1.start_time > pulse2.end_time):
             return 0.0
-        if (pulse1.end_time_us() < pulse2.start_time_us()):
+        if (pulse1.end_time < pulse2.start_time):
             return 0.0
 
-        deduction_left = pulse2.start_time_us() - pulse1.start_time_us()
-        deduction_right = pulse1.end_time_us() - pulse2.end_time_us()
+        deduction_left = pulse2.start_time - pulse1.start_time
+        deduction_right = pulse1.end_time - pulse2.end_time
         if deduction_left < 0.0:
             deduction_left = 0.0
         if deduction_right < 0.0:
             deduction_right = 0.0
-        return pulse1.pulse_width() - deduction_left - deduction_right
+        return pulse1.width - deduction_left - deduction_right
+
+    def proportional_overlap(pulse1, pulse2):
+        """Gives the proportion of pulse1 overlapped by pulse 2."""
+        overlap = Pulse.overlap(pulse1, pulse2)
+        return overlap/pulse1.width
 
 
 class PulseTrain(object):

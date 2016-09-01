@@ -14,41 +14,56 @@ class TestPulseMethods(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_eq_with_lower(self):
-        pass
+    def test_eq_with_overlapping(self):
+        self.assertFalse(self.low_pulse == self.mid_pulse1)
 
-    def test_eq_with_higher(self):
-        pass
+    def test_eq_with_nonoverlapping(self):
+        self.assertFalse(self.low_pulse == self.mid_pulse2)
 
     def test_eq_with_equal(self):
-        pass
+        self.assertTrue(self.low_pulse == self.low_pulse)
 
     def test_lt_with_lower(self):
-        pass
+        self.assertTrue(self.low_pulse < self.mid_pulse2)
 
     def test_lt_with_higher(self):
-        pass
+        self.assertFalse(self.high_pulse < self.mid_pulse2)
 
     def test_lt_with_equal(self):
-        pass
+        self.assertFalse(self.mid_pulse2 < self.mid_pulse2)
 
     def test_le_with_lower(self):
-        pass
+        self.assertTrue(self.low_pulse <= self.mid_pulse2)
 
     def test_le_with_higher(self):
-        pass
+        self.assertFalse(self.high_pulse <= self.mid_pulse2)
 
     def test_le_with_equal(self):
-        pass
+        self.assertFalse(self.mid_pulse2 <= self.mid_pulse2)
 
-    def test_absolute_overlap_0_percent(self):
-        pass
+    def test_overlap_0(self):
+        overlap = Pulse.overlap(self.low_pulse, self.high_pulse)
+        self.assertEqual(overlap, 0)
 
-    def test_absolute_overlap_50_percent(self):
-        pass
+    def test_overlap_1(self):
+        overlap = Pulse.overlap(self.low_pulse, self.mid_pulse1)
+        self.assertEqual(overlap, 1)
 
-    def test_absolute_overlap_100_percent(self):
-        pass
+    def test_overlap_2(self):
+        overlap = Pulse.overlap(self.low_pulse, self.low_pulse)
+        self.assertEqual(overlap, 2)
+
+    def test_proportional_overlap_0_percent(self):
+        overlap = Pulse.proportional_overlap(self.low_pulse, self.high_pulse)
+        self.assertEqual(overlap, 0)
+
+    def test_proportional_overlap_50_percent(self):
+        overlap = Pulse.proportional_overlap(self.low_pulse, self.mid_pulse1)
+        self.assertEqual(overlap, .5)
+
+    def test_proportional_overlap_100_percent(self):
+        overlap = Pulse.proportional_overlap(self.low_pulse, self.low_pulse)
+        self.assertEqual(overlap, 1)
 
 
 class TestPulseTrainMethods(unittest.TestCase):
@@ -93,6 +108,21 @@ class TestPulseTrainMethods(unittest.TestCase):
     def test_coincidence_fraction(self):
         pass
 
+
+class TestUtilityMethods(unittest.TestCase):
+
+    def setUp(self):
+        EPSILON = .000001
+
+    def tearDown(self):
+        pass
+
+    def test_eq_float_neq(self):
+        self.assertFalse(eq_float(0.0, 2.5))
+
+    def test_eq_float_eq(self):
+        self.assertTrue(eq_float(2.5, 2.5))
+        pass
 
 if __name__ == '__main__':
     unittest.main()
