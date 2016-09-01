@@ -81,10 +81,10 @@ class PulseTrain(object):
         self.duration = float(duration)
         try:
             self._pattern = list(pulses)
-            self._pulses = pattern * (duration//pri)
+            self._pulses = self._pattern * (duration//pri)
         except TypeError:
             self._pattern = [pulses]
-            self._pulses = pattern * (duation//pri)
+            self._pulses = self._pattern * (duration//pri)
 
     # USE REPRLIB
     def __repr__(self):

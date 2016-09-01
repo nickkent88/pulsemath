@@ -53,10 +53,32 @@ class TestPulseMethods(unittest.TestCase):
 
 class TestPulseTrainMethods(unittest.TestCase):
 
+    def setUp(self):
+        self.train1 = PulseTrain(1000, 6000, Pulse(0,10))
+        self.train2 = PulseTrain(1000, 6000, Pulse(0,10))
+        pulses = (Pulse(0, .2),
+                  Pulse(37.5, 37.7),
+                  Pulse(75, 75.2),
+                  Pulse(112.5, 112.5),
+                  Pulse(150, 162),
+                  Pulse(300, 312),
+                  Pulse(450, 570))
+        self.train3 = PulseTrain(1200, 6000, pulses)
+
+    def tearDown(self):
+        pass
+
+    def test_train_lengths(self):
+        self.assertEqual(len(self.train1), 6)
+        self.assertEqual(len(self.train3), 35)
+
     def test___iter___(self):
         pass
 
-    def test___getitem___(self):
+    def test___getitem___with_integer(self):
+        pass
+
+    def test___getitem___with_slice(self):
         pass
 
     def test_shift_phase_0(self):
@@ -68,10 +90,9 @@ class TestPulseTrainMethods(unittest.TestCase):
     def test_shift_phase_positive(self):
         pass
 
-
-
     def test_coincidence_fraction(self):
         pass
+
 
 if __name__ == '__main__':
     unittest.main()
