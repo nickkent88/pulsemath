@@ -69,6 +69,7 @@ class TestPulseMethods(unittest.TestCase):
 class TestPulseTrainMethods(unittest.TestCase):
 
     def setUp(self):
+        self.train = PulseTrain(1000, Pulse(0,10))
         self.train1 = PulseTrain(1000, Pulse(0,10), 6000)
         self.train2 = PulseTrain(1000, Pulse(0,10), 6000)
         self.pulses = (Pulse(0, .2),
@@ -100,7 +101,26 @@ class TestPulseTrainMethods(unittest.TestCase):
     def test___getitem___with_slice(self):
         self.assertEqual(self.train3[0:4], NotImplemented)
 
-    def test_shift_phase_0(self):
+    def test_shift_phase_by_0(self):
+        self.assertEqual(self.train1, self.train2)
+        self.train2.shift_phase(0)
+        self.assertEqual(self.train1, self.train2)
+
+    def test_shift_phase_by_duration(self):
+        self.assertEqual(self.train1, self.train2)
+        self.train2.shift_phase(6000)
+        self.assertEqual(len(self.train2), len(self.train1))
+        self.assertEqual(self.train1, self.train2)
+
+    def test_shift_phase_so_a_pulse_overlaps(self):
+        train = PulseTrain(1000, (Pulse(0, 10), Pulse(500, 510)))
+        train.shift_phase(995)   
+        should_equal = PulseTrain(1000, (Pulse(0, 5),
+                                         Pulse(495, 505),
+                                         Pulse(995, 1005)))
+        self.assertEqual(train, should_equal)
+
+    def test_shift_phase_of_train_that_already_has_circular_overlap(self):
         pass
 
     def test_shift_phase_negative(self):

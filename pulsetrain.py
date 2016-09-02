@@ -1,4 +1,5 @@
 from bisect import bisect_left
+from math import fsum
 import numbers
 
 import numpy as np
@@ -19,7 +20,10 @@ class Pulse(object):
     def __init__(self, start_time, end_time):
         self.start_time = float(start_time)
         self.end_time = float(end_time)
-        self.width = float(end_time - start_time)
+
+    @property
+    def width(self):
+        return self.end_time - self.start_time
 
     def __repr__(self):
         outvars = {'start': self.start_time, 'end': self.end_time}
@@ -47,8 +51,8 @@ class Pulse(object):
         return lhs.end_time < rhs.start_time + EPSILON
 
     def shift_phase(self, increment):
-        self.start_time += amount_us
-        self.end_time += amount_us
+        self.start_time += increment
+        self.end_time += increment
 
     @staticmethod
     def overlap(pulse1, pulse2):
@@ -88,11 +92,14 @@ class PulseTrain(object):
         else:
             self.duration = float(pri)
         try:
-            self._pattern = list(pulses)
-            self._pulses = self._pattern * (duration//pri)
+            self.pattern = list(pulses)
+            self._pulses = self.pattern * int(self.duration//pri)
         except TypeError:
-            self._pattern = [pulses]
-            self._pulses = self._pattern * (duration//pri)
+            self.pattern = [pulses]
+            self._pulses = self.pattern * int(self.duration//pri)
+        for i in range(1, len(self.pattern)):
+            if not self.pattern[i - 1] < self.pattern[i]:
+                raise ValueError('Pulses in train cannot overlap.')
 
     # USE REPRLIB
     def __repr__(self):
@@ -108,6 +115,11 @@ class PulseTrain(object):
 
     # def __format__(self):
     #     pass
+    def __eq__(lhs, rhs):
+        if not len(lhs) == len(rhs):
+            return False
+        return all((lhs_pulse == rhs_pulse) 
+                   for lhs_pulse, rhs_pulse in zip(lhs, rhs))
 
     def __iter__(self):
         return (pulse for pulse in self._pulses)
@@ -131,54 +143,59 @@ class PulseTrain(object):
         return len(self._pulses)
 
     # List methods
-    def append(self, pulse):
-        self._pulses.append(pulse)
-
     def extend(self, pulse_train):
         self._pulses.extend(pulse_train)
 
     def insert(self, index, pulse):
-        self._pulses.insert(index, pulse)
-
-    def count(self):
-        return self._pulses.count()
-
-    def sort(self, comp=None, key=None, reverse=False):
-        self._pulses.sort(comp, key, reverse)
+        if pulse < self._pulses[index]:
+            self._pulses.insert(index, pulse)
+        else: 
+            raise IndexError("""Pulse must end before the pulse it is being
+                             inserted before begins.""")
 
     def clear(self):
         self._pulses.clear()
 
     def shift_phase(self, increment):
+        if not all(pulse in self.pattern for pulse in self._pulses):
+            # Concatenate the pulse that "stretches around" from the end to the 
+            # beginning.
+            self._pulses[-1].end_time += self._pulses[0].width
+            self._pulses.remove(self._pulses[0])
+
+        # Shift pulses to appropriate orientations
         for pulse in self._pulses:
-            pulse.shift_phase(increment)
+            width = pulse.width
+            pulse.start_time = (pulse.start_time + increment) % self.duration
+            pulse.end_time = pulse.start_time + width
+
+        # Make sure pulses are still in order from earliest to latest
+        self._pulses.sort(key=lambda pulse: pulse.start_time)
+        
         # Ensure that the pulse train is "circular".
-        if eq_float(self._pulses[-1], self.duration):
-            last_pulse = self._pulses[-1].end_time
-            overhang = last_pulse - duration
-            # Is the last pulse hanging off the end?
-            if overhang > 0:
-                # Is the last pulse totally off the end?
-                if last_pulse.start_time > duration:
-                    self._pulses[0].start_time = last_pulse.start_time - duration
-                    self._pulses.pop()
-                else:
-                    # If there is already an overlapping pulse at the start
-                    # of the train?
-                    if eq_float(self._pulses[0].end_time, overhang):
-                        # Lengthen first pulse, moving start time to zero
-                        self._pulses[0].start_time = 0
-                        # Chop the end of the last pulse
-                        last_pulse.end_time = duration 
-                    else:
-                        # Insert pulse with width equal to the length of the 
-                        # last pulse's overhang.
-                        self._pulses.insert(0, Pulse(0, overhang))
+        last_pulse = self._pulses[-1]
+        overhang = last_pulse.end_time - self.duration
+
+        # Is the last pulse hanging off the end?
+        if overhang > 0 - EPSILON:
+            # After the sort earlier, there should only be
+            assert all(pulse.end_time < self.duration for pulse in self._pulses[:-1])
+            if eq_float(self._pulses[0].end_time, overhang):
+                # Lengthen first pulse, moving start time to zero
+                self._pulses[0].start_time = 0
+                # Chop the end of the last pulse
+                last_pulse.end_time = self.duration 
+            else:
+                # Insert pulse with width equal to the length of the 
+                # last pulse's overhang.
+                self._pulses.insert(0, Pulse(0, overhang))
+
     def to_vector(self):
         pass
 
     @staticmethod
     def coincidence_fraction(train1, train2, method='sim'):
+        # USE FSUM
         pass
 
 
