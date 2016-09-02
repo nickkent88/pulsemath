@@ -189,6 +189,7 @@ class PulseTrain(object):
                 # Insert pulse with width equal to the length of the 
                 # last pulse's overhang.
                 self._pulses.insert(0, Pulse(0, overhang))
+                last_pulse.end_time -= overhang
 
     def to_vector(self):
         pass
