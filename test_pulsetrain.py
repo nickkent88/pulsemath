@@ -75,7 +75,7 @@ class TestPulseTrainMethods(unittest.TestCase):
         self.pulses = (Pulse(0, .2),
                   Pulse(37.5, 37.7),
                   Pulse(75, 75.2),
-                  Pulse(112.5, 112.5),
+                  Pulse(112.5, 112.7),
                   Pulse(150, 162),
                   Pulse(300, 312),
                   Pulse(450, 570))
@@ -134,9 +134,6 @@ class TestPulseTrainMethods(unittest.TestCase):
     def test_shift_phase_negative(self):
         pass
 
-    def test_shift_phase_positive(self):
-        pass
-
     def test_coincidence_fraction(self):
         pass
 
@@ -154,7 +151,6 @@ class TestUtilityMethods(unittest.TestCase):
 
     def test_eq_float_eq(self):
         self.assertTrue(eq_float(2.5, 2.5))
-        pass
 
 if __name__ == '__main__':
     unittest.main()

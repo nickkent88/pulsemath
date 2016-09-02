@@ -18,6 +18,8 @@ class Pulse(object):
             end_time (float): The time at which the pulse ends.
     """
     def __init__(self, start_time, end_time):
+        if eq_float(start_time, end_time):
+            raise ValueError('Start time cannot equal end time.')
         self.start_time = float(start_time)
         self.end_time = float(end_time)
 
@@ -56,7 +58,19 @@ class Pulse(object):
 
     @staticmethod
     def overlap(pulse1, pulse2):
-        """This function calculates the overlap, in seconds, of pulse2 on pulse1."""
+        """Synopsis
+
+        Detail
+
+        Args:
+            Arg: Description
+
+        Returns:
+            Description
+
+        Raises:
+            N/A
+        """ 
         if (pulse1.start_time > pulse2.end_time):
             return 0.0
         if (pulse1.end_time < pulse2.start_time):
@@ -70,10 +84,26 @@ class Pulse(object):
             deduction_right = 0.0
         return pulse1.width - deduction_left - deduction_right
 
-    def proportional_overlap(pulse1, pulse2):
+    def proportional_overlap(desired, other):
         """Gives the proportion of pulse1 overlapped by pulse 2."""
-        overlap = Pulse.overlap(pulse1, pulse2)
-        return overlap/pulse1.width
+        """Gives the proportion of pulse1 overlapped by pulse 2.
+         
+         Finds the absolute overlap in units of time and divides by the width
+         of the desired pulse.
+         
+         Args:
+             desired: The pulse for which the proportional overlap is to be
+                computed.
+            other: The pulse overlapping the desired pulse.
+         
+         Returns:
+             The proportion of the desired pulse overlapped by the other pulse.
+         
+         Raises:
+             N/A
+         """ 
+        overlap = Pulse.overlap(desired, other)
+        return overlap/desired.width
 
 
 class PulseTrain(object):
