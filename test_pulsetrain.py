@@ -128,9 +128,7 @@ class TestPulseTrainMethods(unittest.TestCase):
                                          Pulse(495, 505),
                                          Pulse(995, 1000)))
         self.assertEqual(train1, should_equal)
-        print(train1)
         train1.shift_phase(5)
-        print(train1)
         self.assertEqual(train1, train2)
 
     def test_shift_phase_negative(self):
