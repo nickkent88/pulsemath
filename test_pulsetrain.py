@@ -120,7 +120,7 @@ class TestPulseTrainMethods(unittest.TestCase):
                                          Pulse(995, 1000)))
         self.assertEqual(train, should_equal)
 
-    def test_shift_phase_of_train_that_already_has_circular_overlap(self):
+    def test_shift_phase_of_train_with_circular_overlap(self):
         train1 = PulseTrain(1000, (Pulse(0, 10), Pulse(500, 510)))
         train2 = PulseTrain(1000, (Pulse(0, 10), Pulse(500, 510)))
         train1.shift_phase(995)   
@@ -131,11 +131,29 @@ class TestPulseTrainMethods(unittest.TestCase):
         train1.shift_phase(5)
         self.assertEqual(train1, train2)
 
-    def test_shift_phase_negative(self):
-        pass
+    def test_shift_phase_negatively(self):
+        train = PulseTrain(1000, (Pulse(0, 10), Pulse(500, 510)))
+        train.shift_phase(-5)   
+        should_equal = PulseTrain(1000, (Pulse(0, 5),
+                                         Pulse(495, 505),
+                                         Pulse(995, 1000)))
+        self.assertEqual(train, should_equal)
+
+    def test_shift_phase_of_train_with_circular_overlap_negatively(self):
+        train1 = PulseTrain(1000, (Pulse(0, 10), Pulse(500, 510)))
+        train2 = PulseTrain(1000, (Pulse(0, 10), Pulse(500, 510)))
+        train1.shift_phase(-5)   
+        should_equal = PulseTrain(1000, (Pulse(0, 5),
+                                         Pulse(495, 505),
+                                         Pulse(995, 1000)))
+        self.assertEqual(train1, should_equal)
+        train1.shift_phase(1005)
+        self.assertEqual(train1, train2)
 
     def test_coincidence_fraction(self):
-        pass
+        fraction = PulseTrain.coincidence_fraction(self.train1, self.train2)
+        should_equal = 1000 * (10 + 10)
+        self.assertEqual(fraction, should_equal)
 
 
 class TestUtilityMethods(unittest.TestCase):

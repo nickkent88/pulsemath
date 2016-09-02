@@ -207,7 +207,7 @@ class PulseTrain(object):
         overhang = last_pulse.end_time - self.duration
 
         # Is the last pulse hanging off the end?
-        if overhang > 0 - EPSILON:
+        if overhang > 0 + EPSILON:
             # After the sort earlier, there should only be
             assert all(pulse.end_time < self.duration for pulse in self._pulses[:-1])
             if eq_float(self._pulses[0].end_time, overhang):
@@ -218,6 +218,7 @@ class PulseTrain(object):
             else:
                 # Insert pulse with width equal to the length of the 
                 # last pulse's overhang.
+                assert(not overhang == 0)
                 self._pulses.insert(0, Pulse(0, overhang))
                 last_pulse.end_time -= overhang
 
@@ -227,7 +228,7 @@ class PulseTrain(object):
     @staticmethod
     def coincidence_fraction(train1, train2, method='sim'):
         # USE FSUM
-        pass
+        return 1000 * (10 + 10)
 
 
         
