@@ -171,9 +171,17 @@ class PulseTrain(object):
 
     # List methods
     def extend(self, pulse_train):
+        """Identical to list.extend"""
         self._pulses.extend(pulse_train)
 
     def insert(self, index, pulse):
+        """Similar to list.insert, but pulses must be ordered and not overlap
+        after insertion.
+
+            Raises:
+                IndexError: Pulse must end before the pulse it is being inserted
+                    before begins.
+        """
         if pulse < self._pulses[index]:
             self._pulses.insert(index, pulse)
         else: 
@@ -184,6 +192,23 @@ class PulseTrain(object):
         self._pulses.clear()
 
     def shift_phase(self, increment):
+        """Shifts the phase of each pulse in the train.
+
+        Moves the orientation of the pulse train in time by a specified increment.
+        Guaranteed to keep the train "circular". That is, if a pulse shifts past
+        the end of the train, a new pulse is inserted at the beginning
+        representing the part of that same pulse stretching into the current 
+        period of time by a pulse in the last PRI.
+        
+        Arguments:
+            increment: The amount by which to shift the phase of the train.
+        
+        Returns:
+            N/A
+        
+        Raises:
+            N/A
+        """
         if not all(pulse in self.pattern for pulse in self._pulses):
             # Concatenate the pulse that "stretches around" from the end to the 
             # beginning.
