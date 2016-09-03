@@ -14,10 +14,19 @@ def eq_float(num1, num2):
 class Pulse(object):
     """A discrete, rectangular pulse
 
-    Args:   start_time (float): The time at which the pulse starts.
-            end_time (float): The time at which the pulse ends.
+    Attributes:   
+        start_time: The time at which the pulse starts.
+        end_time: The time at which the pulse ends.
     """
     def __init__(self, start_time, end_time):
+        """Constructs a Pulse object.
+        
+        Args:
+            start_time: The time at which the pulse starts.
+        
+        Raises:
+            ValueError: Start time cannot equal end time.
+        """
         if eq_float(start_time, end_time):
             raise ValueError('Start time cannot equal end time.')
         self.start_time = float(start_time)
@@ -58,18 +67,8 @@ class Pulse(object):
 
     @staticmethod
     def overlap(pulse1, pulse2):
-        """Synopsis
-
-        Detail
-
-        Args:
-            Arg: Description
-
-        Returns:
-            Description
-
-        Raises:
-            N/A
+        """Returns the overlap in units of time between two pulses. It is
+        assumed that both pulses use the same units of time.
         """ 
         if (pulse1.start_time > pulse2.end_time):
             return 0.0
@@ -85,23 +84,7 @@ class Pulse(object):
         return pulse1.width - deduction_left - deduction_right
 
     def proportional_overlap(desired, other):
-        """Gives the proportion of pulse1 overlapped by pulse 2."""
-        """Gives the proportion of pulse1 overlapped by pulse 2.
-         
-         Finds the absolute overlap in units of time and divides by the width
-         of the desired pulse.
-         
-         Args:
-             desired: The pulse for which the proportional overlap is to be
-                computed.
-            other: The pulse overlapping the desired pulse.
-         
-         Returns:
-             The proportion of the desired pulse overlapped by the other pulse.
-         
-         Raises:
-             N/A
-         """ 
+        """Returns the proportion of pulse1 overlapped by pulse 2.""" 
         overlap = Pulse.overlap(desired, other)
         return overlap/desired.width
 
@@ -109,13 +92,27 @@ class Pulse(object):
 class PulseTrain(object):
     """A sequence of discrete, rectangular pulses.
 
-    Args:   pri (float): The pulse repetition interval of the train. More than
-                one pulse may occur in a single PRI.
-            pulses (iterable(Pulse)): An iterable containing Pulse objects.
-            duration (float): The duration of the train. If unspecified the 
-                default duration is equal to the specified PRI.
+    Attributes:   
+        duration: The duration of the train.
+        pattern: A list containing the pulses that occur in a single PRI of the
+            train.
+        pulses: An iterable containing Pulse objects.
+        pri: The pulse repetition interval of the train. More than one pulse may
+            occur in a single PRI.
     """
     def __init__(self, pri, pulses, duration=None):
+    """Constructs a pulse train.
+
+    Arguments:   
+        pri: The pulse repetition interval of the train. More than one pulse may
+            occur in a single PRI.
+        pulses: An iterable containing Pulse objects.
+        duration: The duration of the train. If unspecified the 
+            default duration is equal to the specified PRI.
+
+    Raises:
+        ValueError: Pulses in train cannot overlap.
+    """
         self.pri = float(pri)
         if not duration == None:
             self.duration = float(duration)
@@ -226,8 +223,42 @@ class PulseTrain(object):
         pass
 
     @staticmethod
-    def coincidence_fraction(train1, train2, method='sim'):
+    def coincidence_fraction(train1, train2, method='sim', increment=1, threshold):
+        """Returns the coincidence fraction between two possibly asynchronous
+        pulse trains.
+
+        Computes the probability of overlap by pulses of pulse train on those of another
+        during a given period of time. By default, the probability of any
+        overlap, no matter how infinitesimally small is returned, but different
+        thresholds of overlap can be specified by the user.
+        
+        Detail
+        
+        Argumenst:
+            train1: The pulse train whose fraction is to be computed.
+            train2: The 'overlapping' pulse train.
+            method: The way to compute the fraction:
+                        'sim' == computation by simulation
+                        'formula' == computation by formula
+            increment: The granularity of shifts in each simulation. The simulation
+                is done by brute force, computing the overlap in a single orientation
+                of the two trains, then shifting the overlapping train by the amount
+                specified in increment. In general, the smaller the increment,
+                the greater the precision (allowing of course for machine
+                precision limitations and roundoff error).
+            threshold: The proportion of an 'overlapped' pulse that must be
+                overlapped in order to be counted as a coincident event.
+        
+        Returns:
+            The probability of overlap between pulses of the two trains.
+        """
         # USE FSUM
+        if not int(train1.duration) == int(train2.duration):
+            raise ValueError('Pulse train durations must be equal.')
+        for i in range(train1.duration/increment):
+        # Check overlaps
+        # Sum overlaps
+        # Shift
         return 1000 * (10 + 10)
 
 
