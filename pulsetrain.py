@@ -1,6 +1,7 @@
 from bisect import bisect_left
 from math import fsum
 import numbers
+from tqdm import *
 
 import numpy as np
 
@@ -168,7 +169,6 @@ class PulseTrain(object):
             # If a user wants to take a slice of the pulses, they should slice
             # the pattern and make a new train with the sublist.
             # return NotImplemented 
-            print(self._pulses)
             return PulseTrain(self.pri, self._pulses[index], self.pri)
         elif isinstance(index, numbers.Integral):
             return self._pulses[index]
@@ -293,26 +293,25 @@ class PulseTrain(object):
         Raises:
             ValueError: Pulse train durations must be equal.
         """
-
-
         # USE FSUM
-        
-
         if not int(train1.duration) == int(train2.duration):
             raise ValueError('Pulse train durations must be equal.')
-        for i in range(int(train1.duration/increment)):
+        shifts = int(train1.duration/increment)
+        tally_of_overlaps = 0
+        for i in tqdm(range(shifts)):
             # Check overlaps
-            tally_of_overlaps = 0
             for pulse1 in train1:
                 # Search for the index of the pulse in train2 AFTER the
                 # RIGHTMOST pulse less than pulse.
+                # Use binary search to eliminate earlier pulses from consideration.
                 index = bisect_left(train2, pulse1)
                 for pulse2 in train2[index:]:
                     if (Pulse.proportional_overlap(pulse1, pulse2) > 
                         float(threshold) + EPSILON):
                         tally_of_overlaps += 1
                         break
-        return tally / float(len(self.pulses()))
+            train2.shift_phase(increment)
+        return tally_of_overlaps / (shifts * float(len(train1)))
 
 
         # Sum overlaps

@@ -152,10 +152,14 @@ class TestPulseTrainMethods(unittest.TestCase):
     def test_to_vector(self):
         pass
 
-    # def test_coincidence_fraction(self):
-    #     fraction = PulseTrain.coincidence_fraction(self.train1, self.train2)
-    #     should_equal = 1000 * (10 + 10)
-    #     self.assertEqual(fraction, should_equal)
+    def test_coincidence_fraction(self):
+        fraction = PulseTrain.coincidence_fraction(self.train1, self.train2, increment=.1)
+        should_equal = .001 * (10 + 120)
+        # This test will only pass at a really small specified increment.
+        # All of this can only show that the results approach a limiting value.
+        # My poor core2duo can't handle that increment in any reasonable amount
+        # of time.
+        # self.assertEqual(fraction, should_equal)
 
 
 class TestUtilityMethods(unittest.TestCase):
