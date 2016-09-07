@@ -83,6 +83,7 @@ class Pulse(object):
             deduction_right = 0.0
         return pulse1.width - deduction_left - deduction_right
 
+    @staticmethod
     def proportional_overlap(desired, other):
         """Returns the proportion of pulse1 overlapped by pulse 2.""" 
         overlap = Pulse.overlap(desired, other)
@@ -101,18 +102,18 @@ class PulseTrain(object):
             occur in a single PRI.
     """
     def __init__(self, pri, pulses, duration=None):
-    """Constructs a pulse train.
+        """Constructs a pulse train.
 
-    Arguments:   
-        pri: The pulse repetition interval of the train. More than one pulse may
-            occur in a single PRI.
-        pulses: An iterable containing Pulse objects.
-        duration: The duration of the train. If unspecified the 
-            default duration is equal to the specified PRI.
+        Arguments:   
+            pri: The pulse repetition interval of the train. More than one pulse may
+                occur in a single PRI.
+            pulses: An iterable containing Pulse objects.
+            duration: The duration of the train. If unspecified the 
+                default duration is equal to the specified PRI.
 
-    Raises:
-        ValueError: Pulses in train cannot overlap.
-    """
+        Raises:
+            ValueError: Pulses in train cannot overlap.
+        """
         self.pri = float(pri)
         if not duration == None:
             self.duration = float(duration)
@@ -120,10 +121,20 @@ class PulseTrain(object):
             self.duration = float(pri)
         try:
             self.pattern = list(pulses)
-            self._pulses = self.pattern * int(self.duration//pri)
+            self._pulses = []
+            for i in range(int(self.duration//self.pri)):
+                for pulse in self.pattern:
+                    start_time = pulse.start_time + i*pri
+                    end_time = pulse.end_time + i*pri
+                    self._pulses.append(Pulse(start_time, end_time))
         except TypeError:
             self.pattern = [pulses]
-            self._pulses = self.pattern * int(self.duration//pri)
+            self._pulses = []
+            for i in range(int(self.duration//self.pri)):
+                for pulse in self.pattern:
+                    start_time = pulse.start_time + i*pri
+                    end_time = pulse.end_time + i*pri
+                    self._pulses.append(Pulse(start_time, end_time))
         for i in range(1, len(self.pattern)):
             if not self.pattern[i - 1] < self.pattern[i]:
                 raise ValueError('Pulses in train cannot overlap.')
@@ -156,7 +167,9 @@ class PulseTrain(object):
         if isinstance(index, slice):
             # If a user wants to take a slice of the pulses, they should slice
             # the pattern and make a new train with the sublist.
-            return NotImplemented 
+            # return NotImplemented 
+            print(self._pulses)
+            return PulseTrain(self.pri, self._pulses[index], self.pri)
         elif isinstance(index, numbers.Integral):
             return self._pulses[index]
         else:
@@ -209,7 +222,7 @@ class PulseTrain(object):
         Raises:
             N/A
         """
-        if not all(pulse in self.pattern for pulse in self._pulses):
+        if not len(self._pulses) == len(self.pattern) * int(self.duration//self.pri):
             # Concatenate the pulse that "stretches around" from the end to the 
             # beginning.
             self._pulses[-1].end_time += self._pulses[0].width
@@ -248,7 +261,7 @@ class PulseTrain(object):
         pass
 
     @staticmethod
-    def coincidence_fraction(train1, train2, method='sim', increment=1, threshold):
+    def coincidence_fraction(train1, train2, method='sim', increment=1, threshold=0):
         """Returns the coincidence fraction between two possibly asynchronous
         pulse trains.
 
@@ -276,12 +289,32 @@ class PulseTrain(object):
         
         Returns:
             The probability of overlap between pulses of the two trains.
+
+        Raises:
+            ValueError: Pulse train durations must be equal.
         """
+
+
         # USE FSUM
+        
+
         if not int(train1.duration) == int(train2.duration):
             raise ValueError('Pulse train durations must be equal.')
-        for i in range(train1.duration/increment):
-        # Check overlaps
+        for i in range(int(train1.duration/increment)):
+            # Check overlaps
+            tally_of_overlaps = 0
+            for pulse1 in train1:
+                # Search for the index of the pulse in train2 AFTER the
+                # RIGHTMOST pulse less than pulse.
+                index = bisect_left(train2, pulse1)
+                for pulse2 in train2[index:]:
+                    if (Pulse.proportional_overlap(pulse1, pulse2) > 
+                        float(threshold) + EPSILON):
+                        tally_of_overlaps += 1
+                        break
+        return tally / float(len(self.pulses()))
+
+
         # Sum overlaps
         # Shift
         return 1000 * (10 + 10)
