@@ -12,4 +12,4 @@ My Modification:
 
 Composite:
 
-    f_c = prf_i * (sum(w_g_j + w_i_j - 2*w_g*n))
+    f_c = prf_i**n * (sum(w_g_j + w_i_j - 2*w_g*n))
